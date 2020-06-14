@@ -23,7 +23,17 @@
 				"command": "terminalEditor.renameTerminal",
 				"title": "Terminal Editor: rename terminal instance"
 			}
-		]
+		],
+		"configuration": {
+			"title": "Terminal Editor",
+			"properties": {
+				"terminalEditors.shellExecutable": {
+					"type": "string",
+					"default": "",
+					"description": "Specifies path to shell executable"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",

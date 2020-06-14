@@ -10,6 +10,28 @@ let activePanel: vscode.WebviewPanel | null = null;
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	function sendThemeToWebView(webview: vscode.Webview) {
+		let config = vscode.workspace.getConfiguration('terminalEditors');
+		function getColor(name: string) {
+			let color = config.get<string>(name);
+			if (color == '') {
+				return null;
+			}
+			return color;
+		}
+		let background = getColor('theme.background');
+		let foreground = getColor('theme.foreground');
+		let cursor = getColor('theme.cursor');
+		let selection = getColor('theme.selection');
+		webview.postMessage({
+			'command': 'receivetheme',
+			'background': background,
+			'foreground': foreground,
+			'cursor': cursor,
+			'selection': selection,
+		});
+	}
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('terminalEditor.start', () => {
 			// Create and show a new webview
@@ -28,6 +50,9 @@ export function activate(context: vscode.ExtensionContext) {
 					retainContextWhenHidden: true,
 				} // Webview options. More on these later.
 			);
+
+			sendThemeToWebView(panel.webview);
+
 			server.webviewServer(panel.webview, context);
 			activePanel = panel;
 			panel.onDidChangeViewState((e: vscode.WebviewPanelOnDidChangeViewStateEvent) => {

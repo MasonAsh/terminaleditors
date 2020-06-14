@@ -33,6 +33,18 @@ window.addEventListener('message', event => {
             // Set timeout prevents race condition 
             connectToTerminalWebSocket();
             break;
+        case 'receivetheme':
+            const background = message.background || getComputedStyle(document.documentElement).getPropertyValue('--vscode-editor-background');
+            const foreground = message.foreground || getComputedStyle(document.documentElement).getPropertyValue('--vscode-editor-foreground');
+            const cursor = message.cursor || getComputedStyle(document.documentElement).getPropertyValue('--vscode-editorCursor-foreground');
+            const selection = message.selection || getComputedStyle(document.documentElement).getPropertyValue('--vscode-editor-selectionBackground');
+            term.setOption('theme', {
+                background: background,
+                foreground: foreground,
+                cursor: cursor,
+                cursorAccent: cursor,
+                selection: selection,
+            });
         case 'redraw':
             term.refresh(0, term.rows - 1);
             break;

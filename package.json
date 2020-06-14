@@ -33,8 +33,23 @@
 			"properties": {
 				"terminalEditors.shellExecutable": {
 					"type": "string",
-					"default": "",
 					"description": "Specifies path to shell executable"
+				},
+				"terminalEditors.theme.background": {
+					"type": "string",
+					"description": "Background color. Leave empty to use theme default."
+				},
+				"terminalEditors.theme.foreground": {
+					"type": "string",
+					"description": "Foreground color. Leave empty to use theme default."
+				},
+				"terminalEditors.theme.cursor": {
+					"type": "string",
+					"description": "Cursor color. Leave empty to use theme default."
+				},
+				"terminalEditors.theme.selection": {
+					"type": "string",
+					"description": "Selection color. Leave empty to use theme default."
 				}
 			}
 		}

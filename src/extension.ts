@@ -5,6 +5,8 @@ import * as path from 'path';
 import * as server from './server';
 //import * as index_html from './terminal_frontend/index.html';
 
+let activePanel: vscode.WebviewPanel | null = null;
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -26,6 +28,12 @@ export function activate(context: vscode.ExtensionContext) {
 				} // Webview options. More on these later.
 			);
 			server.webviewServer(panel.webview, context);
+			activePanel = panel;
+			panel.onDidChangeViewState((e: vscode.WebviewPanelOnDidChangeViewStateEvent) => {
+				if (e.webviewPanel.active) {
+					activePanel = e.webviewPanel;
+				}
+			});
 
 			const cssPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'xterm.css'));
 			const jsPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'xterm.js'));
@@ -39,6 +47,14 @@ export function activate(context: vscode.ExtensionContext) {
 			panel.webview.html = getWebviewContent(panel.webview, jsUri, cssUri, clientUri, serverUri);
 		})
 	);
+
+	vscode.commands.registerCommand('terminalEditor.renameTerminal', () => {
+		vscode.window.showInputBox().then((title) => {
+			if (activePanel && activePanel.active && title) {
+				activePanel.title = title;
+			}
+		});
+	});
 }
 
 function getWebviewContent(webview: any, xterm_js: vscode.Uri, xterm_css: vscode.Uri, client_js: vscode.Uri, serverUri: vscode.Uri): string {

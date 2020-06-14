@@ -17,7 +17,11 @@
 		"commands": [
 			{
 				"command": "terminalEditor.start",
-				"title": "Terminal Editor: New terminal instance"
+				"title": "Terminal Editor: new terminal instance"
+			},
+			{
+				"command": "terminalEditor.renameTerminal",
+				"title": "Terminal Editor: rename terminal instance"
 			}
 		]
 	},

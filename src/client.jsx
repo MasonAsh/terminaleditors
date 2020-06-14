@@ -6,23 +6,18 @@ term.open(terminalContainer);
 terminalContainer.style.width = '100%';
 terminalContainer.style.height = '100vh'
 
-let socketURL, pid, serverUri;
+let pid;
 
 const vscode = acquireVsCodeApi();
 
 setTimeout(() => {
-    // Set terminal size again to set the specific dimensions on the demo
     term.focus();
-
-    console.log('before fetch');
 
     vscode.postMessage({
         command: 'newterm',
         rows: 40,
         cols: 120,
     });
-
-    console.log('after newterm');
 }, 0);
 
 window.addEventListener('message', event => {

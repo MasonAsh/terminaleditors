@@ -15,6 +15,7 @@ let term = new xterm.Terminal({
 
 term.onResize((size: { cols: number, rows: number }) => {
     if (pid) {
+        console.log('posting the resize message');
         vscode.postMessage({
             'command': 'resize',
             'pid': pid,
@@ -32,6 +33,8 @@ window.addEventListener('message', event => {
             pid = message.pid;
             // Set timeout prevents race condition 
             connectToTerminalWebSocket();
+            // In case there were any resizes that haven't been synchronized with pty server
+            fitAddon.fit();
             break;
         case 'receivetheme':
             const background = message.background || getComputedStyle(document.documentElement).getPropertyValue('--vscode-editor-background');
@@ -92,14 +95,16 @@ declare function acquireVsCodeApi(): any;
 
 const vscode = acquireVsCodeApi();
 
+// Fill space before creating terminal so that we have
+// accurate row/col count to send
+fitAddon.fit();
+
 setTimeout(() => {
     term.focus();
 
-    fitAddon.fit();
-
     vscode.postMessage({
         command: 'newterm',
-        rows: 40,
-        cols: 120,
+        rows: term.rows,
+        cols: term.cols,
     });
 }, 0);

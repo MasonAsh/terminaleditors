@@ -56,6 +56,14 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		});
 	});
+
+	vscode.commands.registerCommand('terminalEditor.redrawTerminal', () => {
+		if (activePanel && activePanel.active) {
+			activePanel.webview.postMessage({
+				'command': 'redraw',
+			});
+		}
+	});
 }
 
 function getWebviewContent(webview: any, xterm_css: vscode.Uri, client_js: vscode.Uri): string {

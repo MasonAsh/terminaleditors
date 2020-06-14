@@ -1,14 +1,27 @@
 import * as xterm from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
+import { WebglAddon } from 'xterm-addon-webgl';
+import { Unicode11Addon } from 'xterm-addon-unicode11';
 
 const terminalContainer = document.getElementById('terminal-container')!;
 
 var term = new xterm.Terminal();
 
+term.setOption('fontFamily', 'courier-new, courier, monospace');
+term.setOption('fontSize', '15');
+term.setOption('rendererType', 'canvas');
+
 const fitAddon = new FitAddon();
 term.loadAddon(fitAddon);
 
+const unicode11Addon = new Unicode11Addon();
+term.loadAddon(unicode11Addon);
+term.unicode.activeVersion = '11';
+
 term.open(terminalContainer);
+
+const webglAddon = new WebglAddon();
+term.loadAddon(webglAddon);
 
 terminalContainer.style.width = '100%';
 terminalContainer.style.height = '100vh'
@@ -40,6 +53,9 @@ window.addEventListener('message', event => {
         case 'receivedata':
             let data = message.data;
             term.write(data);
+            break;
+        case 'redraw':
+            term.refresh(0, term.rows - 1);
             break;
     }
 });

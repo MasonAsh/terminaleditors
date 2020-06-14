@@ -22,6 +22,10 @@
 			{
 				"command": "terminalEditor.renameTerminal",
 				"title": "Terminal Editor: rename terminal instance"
+			},
+			{
+				"command": "terminalEditor.redrawTerminal",
+				"title": "Terminal Editor: redraw terminal"
 			}
 		],
 		"configuration": {
@@ -64,13 +68,15 @@
 		"webpack": "^4.43.0",
 		"webpack-cli": "^3.3.11",
 		"xterm": "^4.6.0",
-		"xterm-addon-fit": "^0.4.0"
+		"xterm-addon-fit": "^0.4.0",
+		"xterm-addon-unicode11": "^0.2.0"
 	},
 	"dependencies": {
 		"express": "^4.17.1",
 		"express-ws": "^4.0.0",
 		"global": "^4.4.0",
 		"node-pty": "0.9.0-beta25",
-		"tsc": "^1.20150623.0"
+		"tsc": "^1.20150623.0",
+		"xterm-addon-webgl": "^0.8.0"
 	}
 }

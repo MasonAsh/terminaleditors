@@ -44,8 +44,8 @@ export function startServer() {
   app.post('/terminals', (req: any, res: any) => {
     const env = Object.assign({}, process.env);
     env['COLORTERM'] = 'truecolor';
-    var cols = parseInt(req.query.cols),
-      rows = parseInt(req.query.rows),
+    var cols = parseInt(req.cols),
+      rows = parseInt(req.rows),
       term = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
         name: 'xterm-256color',
         cols: cols || 80,
@@ -180,7 +180,19 @@ export function webviewServer(webviewPanel: vscode.Webview, context: vscode.Exte
   function handleTermMessage(message: any) {
     let pid = message.pid;
     var term = terminals[parseInt(pid)];
-    term.write(message.data);
+    if (term) {
+      term.write(message.data);
+    } else {
+      console.log(`Invalid pid was passed ${pid}`)
+    }
+  }
+
+  function resize(message: any) {
+    let pid = message.pid;
+    let rows = message.rows;
+    let cols = message.cols;
+    let term = terminals[pid];
+    term.resize(cols, rows);
   }
 
   webviewPanel.onDidReceiveMessage(
@@ -191,6 +203,9 @@ export function webviewServer(webviewPanel: vscode.Webview, context: vscode.Exte
           return;
         case 'termmessage':
           handleTermMessage(message);
+          return;
+        case 'resize':
+          resize(message);
           return;
       }
     },

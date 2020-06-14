@@ -61,7 +61,6 @@ function getWebviewContent(webview: any, xterm_js: vscode.Uri, xterm_css: vscode
 	</head>
 
 	<body>
-		<div id="server-uri">${serverUri}</div>
 	    <div id="terminal-container"></div>
 		<script src="${xterm_js}"></script>
 		<script src="${client_js}"></script>

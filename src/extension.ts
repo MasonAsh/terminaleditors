@@ -25,6 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
 							webviewPort: 80,
 						}
 					],
+					retainContextWhenHidden: true,
 				} // Webview options. More on these later.
 			);
 			server.webviewServer(panel.webview, context);

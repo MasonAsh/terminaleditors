@@ -6,9 +6,50 @@ import { AttachAddon } from 'xterm-addon-attach';
 
 const terminalContainer = document.getElementById('terminal-container')!;
 
+terminalContainer.style.width = '100%';
+terminalContainer.style.height = '100vh'
+
 let term = new xterm.Terminal({
     windowsMode: false,
 } as xterm.ITerminalOptions);
+
+term.onResize((size: { cols: number, rows: number }) => {
+    if (pid) {
+        vscode.postMessage({
+            'command': 'resize',
+            'pid': pid,
+            'rows': size.rows,
+            'cols': size.cols,
+        });
+    }
+});
+
+window.addEventListener('message', event => {
+    const message = event.data; // The JSON data our extension sent
+
+    switch (message.command) {
+        case 'newterm':
+            pid = message.pid;
+            // Set timeout prevents race condition 
+            connectToTerminalWebSocket();
+            break;
+        case 'redraw':
+            term.refresh(0, term.rows - 1);
+            break;
+    }
+});
+
+term.attachCustomKeyEventHandler((event) => {
+    if (event.getModifierState('Control') && event.key == 'p') {
+        return false;
+    }
+
+    return true;
+});
+
+window.addEventListener('resize', () => {
+    fitAddon.fit();
+});
 
 function connectToTerminalWebSocket() {
     let socket = new WebSocket(`ws://127.0.0.1:3000/${pid}`);
@@ -18,8 +59,6 @@ function connectToTerminalWebSocket() {
         term.setOption('fontFamily', 'courier-new, courier, monospace');
         term.setOption('fontSize', '15');
         term.setOption('rendererType', 'canvas');
-
-        fitAddon.fit();
     };
 }
 
@@ -35,9 +74,6 @@ term.open(terminalContainer);
 const webglAddon = new WebglAddon();
 term.loadAddon(webglAddon);
 
-terminalContainer.style.width = '100%';
-terminalContainer.style.height = '100vh'
-
 let pid: string | null = null;
 
 declare function acquireVsCodeApi(): any;
@@ -47,54 +83,11 @@ const vscode = acquireVsCodeApi();
 setTimeout(() => {
     term.focus();
 
+    fitAddon.fit();
+
     vscode.postMessage({
         command: 'newterm',
         rows: 40,
         cols: 120,
     });
 }, 0);
-
-window.addEventListener('message', event => {
-    const message = event.data; // The JSON data our extension sent
-
-    switch (message.command) {
-        case 'newterm':
-            pid = message.pid;
-            connectToTerminalWebSocket();
-            break;
-        case 'redraw':
-            term.refresh(0, term.rows - 1);
-            break;
-    }
-});
-
-// term.onData(data => {
-//     vscode.postMessage({
-//         'command': 'termmessage',
-//         'pid': pid,
-//         'data': data,
-//     });
-// });
-
-term.attachCustomKeyEventHandler((event) => {
-    if (event.getModifierState('Control') && event.key == 'p') {
-        return false;
-    }
-
-    return true;
-});
-
-window.addEventListener('resize', () => {
-    fitAddon.fit();
-});
-
-term.onResize((size: { cols: number, rows: number }) => {
-    if (pid) {
-        vscode.postMessage({
-            'command': 'resize',
-            'pid': pid,
-            'rows': size.rows,
-            'cols': size.cols,
-        });
-    }
-});

@@ -109,8 +109,9 @@ export function webviewServer(webviewPanel: vscode.Webview, context: vscode.Exte
     console.log('Created terminal with PID: ' + term.pid);
     terminals[term.pid] = term;
     logs[term.pid] = '';
+    let pid = term.pid;
     term.on('data', function (data: any) {
-      logs[data.pid] += data;
+      logs[pid] += data;
     });
     webviewPanel.postMessage({
       'command': 'newterm',

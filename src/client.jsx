@@ -47,29 +47,18 @@ term.onData(data => {
         'data': data,
     });
 });
-// window.addEventListener('keyup', (e) => {
-//     if (term) {
-//         vscode.postMessage({
-//             'command': 'termmessage',
-//             'pid': pid,
-//             'data': e.char,
-//         });
-//     }
-// })
+
+term.attachCustomKeyEventHandler((event) => {
+    if (event.getModifierState('Control') && event.key == 'p') {
+        return false;
+    }
+
+    return true;
+});
 
 window.addEventListener('resize', () => {
     fitTerminal();
 });
-
-function updateTerminalSize(rows, cols) {
-    // TODO: Figure out how to make terminal fill the page
-    // const width = (cols * term._core._renderService.dimensions.actualCellWidth + term._core.viewport.scrollBarWidth).toString() + 'px';
-    // const height = (rows * term._core._renderService.dimensions.actualCellHeight).toString() + 'px';
-    // terminalContainer.style.width = width;
-    // terminalContainer.style.height = height;
-    fitTerminal();
-    //   addons.fit.instance.fit();
-}
 
 function fitTerminal() {
     if (!term) {

@@ -3,7 +3,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as server from './server';
-//import * as index_html from './terminal_frontend/index.html';
 
 let activePanel: vscode.WebviewPanel | null = null;
 
@@ -50,6 +49,15 @@ export function activate(context: vscode.ExtensionContext) {
 					retainContextWhenHidden: true,
 				} // Webview options. More on these later.
 			);
+
+			// Terminal icon courtesy of feathericons: https://github.com/feathericons/feather
+			// Not an ideal way to do this, but I don't think it's possible to access
+			// file icon themes currently.
+			if (vscode.window.activeColorTheme.kind == vscode.ColorThemeKind.Dark) {
+				panel.iconPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'terminalwhite.png'));
+			} else {
+				panel.iconPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'terminalblack.png'));
+			}
 
 			sendThemeToWebView(panel.webview);
 

@@ -14,11 +14,12 @@ function connectToTerminalWebSocket() {
     let socket = new WebSocket(`ws://127.0.0.1:3000/${pid}`);
     socket.onopen = () => {
         term.loadAddon(new AttachAddon(socket));
-        fitAddon.fit();
 
         term.setOption('fontFamily', 'courier-new, courier, monospace');
         term.setOption('fontSize', '15');
         term.setOption('rendererType', 'canvas');
+
+        fitAddon.fit();
     };
 }
 
@@ -85,14 +86,15 @@ term.attachCustomKeyEventHandler((event) => {
 
 window.addEventListener('resize', () => {
     fitAddon.fit();
-
 });
 
 term.onResize((size: { cols: number, rows: number }) => {
-    vscode.postMessage({
-        'command': 'resize',
-        'pid': pid,
-        'rows': size.rows,
-        'cols': size.cols,
-    });
+    if (pid) {
+        vscode.postMessage({
+            'command': 'resize',
+            'pid': pid,
+            'rows': size.rows,
+            'cols': size.cols,
+        });
+    }
 });

@@ -15,10 +15,10 @@ import * as expressWs from 'express-ws';
 const USE_BINARY = os.platform() !== "win32";
 
 let app: expressWs.Application | null;
+let terminals: any = {},
+  logs: any = {};
 
 export function webviewServer(webviewPanel: vscode.Webview, context: vscode.ExtensionContext) {
-  var terminals: any = {},
-    logs: any = {};
 
   if (app == null) {
     app = expressWs(express()).app;

@@ -17,15 +17,15 @@
 		"commands": [
 			{
 				"command": "terminalEditor.start",
-				"title": "Terminal Editor: new terminal instance"
+				"title": "Terminal Editor: New Terminal"
 			},
 			{
 				"command": "terminalEditor.renameTerminal",
-				"title": "Terminal Editor: rename terminal instance"
+				"title": "Terminal Editor: Rename Terminal"
 			},
 			{
 				"command": "terminalEditor.redrawTerminal",
-				"title": "Terminal Editor: redraw terminal"
+				"title": "Terminal Editor: Redraw Terminal"
 			}
 		],
 		"configuration": {

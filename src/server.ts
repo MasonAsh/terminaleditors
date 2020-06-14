@@ -4,10 +4,8 @@
  * demo to the public as is would introduce security risks for the host.
  **/
 
-var express = require('express');
-var expressWs = require('express-ws');
-var os = require('os');
-var pty = require('node-pty');
+import * as os from 'os';
+import * as pty from 'node-pty';
 import * as vscode from 'vscode';
 import { pid } from 'process';
 
@@ -19,12 +17,10 @@ export function webviewServer(webviewPanel: vscode.Webview, context: vscode.Exte
     logs: any = {};
 
   function newTerm(message: any) {
-    const env = Object.assign({}, process.env);
+    const env: any = Object.assign({}, process.env);
     let config = vscode.workspace.getConfiguration('terminalEditors');
-    let shellPath = config.get<string>('shellExecutable');
-    if (shellPath == "") {
-      shellPath = process.platform === 'win32' ? 'cmd.exe' : 'bash'
-    }
+    let defaultShell = process.platform === 'win32' ? 'cmd.exe' : 'bash';
+    let shellPath = config.get<string>('shellExecutable') || defaultShell;
     env['COLORTERM'] = 'truecolor';
     var cols = parseInt(message.cols),
       rows = parseInt(message.rows),
@@ -34,7 +30,7 @@ export function webviewServer(webviewPanel: vscode.Webview, context: vscode.Exte
         rows: rows || 24,
         cwd: env.PWD,
         env: env,
-        encoding: USE_BINARY ? null : 'utf8'
+        encoding: USE_BINARY ? undefined : 'utf8'
       });
 
     console.log('Created terminal with PID: ' + term.pid);

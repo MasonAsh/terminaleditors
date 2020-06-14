@@ -1,12 +1,16 @@
-const terminalContainer = document.getElementById('terminal-container');
+import * as xterm from 'xterm';
 
-var term = new Terminal();
+const terminalContainer = document.getElementById('terminal-container')!;
+
+var term = new xterm.Terminal();
 term.open(terminalContainer);
 
 terminalContainer.style.width = '100%';
 terminalContainer.style.height = '100vh'
 
-let pid;
+let pid: string | null = null;
+
+declare function acquireVsCodeApi(): any;
 
 const vscode = acquireVsCodeApi();
 
@@ -29,7 +33,7 @@ window.addEventListener('message', event => {
             fitTerminal();
             break;
         case 'receivedata':
-            data = message.data;
+            let data = message.data;
             term.write(data);
             break;
     }
@@ -68,7 +72,7 @@ function fitTerminal() {
         return undefined;
     }
 
-    const core = (term)._core;
+    const core = (term as any)._core;
 
     const parentElementStyle = window.getComputedStyle(term.element.parentElement);
     const parentElementHeight = parseInt(parentElementStyle.getPropertyValue('height'));

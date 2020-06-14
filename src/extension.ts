@@ -37,15 +37,15 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 
 			const cssPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'xterm.css'));
-			const jsPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'xterm.js'));
-			const clientPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'client.jsx'));
+			//const jsPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'xterm.js'));
+			const clientPath = vscode.Uri.file(path.join(context.extensionPath, 'out', 'client.js'));
 			const localUri = vscode.Uri.parse('http://localhost:3000');
-			const jsUri = panel.webview.asWebviewUri(jsPath);
+			//const jsUri = panel.webview.asWebviewUri(jsPath);
 			const cssUri = panel.webview.asWebviewUri(cssPath);
 			const clientUri = panel.webview.asWebviewUri(clientPath);
 			const serverUri = panel.webview.asWebviewUri(localUri);
 
-			panel.webview.html = getWebviewContent(panel.webview, jsUri, cssUri, clientUri, serverUri);
+			panel.webview.html = getWebviewContent(panel.webview, cssUri, clientUri);
 		})
 	);
 
@@ -58,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 }
 
-function getWebviewContent(webview: any, xterm_js: vscode.Uri, xterm_css: vscode.Uri, client_js: vscode.Uri, serverUri: vscode.Uri): string {
+function getWebviewContent(webview: any, xterm_css: vscode.Uri, client_js: vscode.Uri): string {
 	function getNonce() {
 		let text = '';
 		const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -79,7 +79,6 @@ function getWebviewContent(webview: any, xterm_js: vscode.Uri, xterm_css: vscode
 
 	<body>
 	    <div id="terminal-container"></div>
-		<script src="${xterm_js}"></script>
 		<script src="${client_js}"></script>
 	</body>
 

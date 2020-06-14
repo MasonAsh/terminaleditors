@@ -2,14 +2,25 @@ import * as xterm from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { WebglAddon } from 'xterm-addon-webgl';
 import { Unicode11Addon } from 'xterm-addon-unicode11';
+import { AttachAddon } from 'xterm-addon-attach';
 
 const terminalContainer = document.getElementById('terminal-container')!;
 
-var term = new xterm.Terminal();
+let term = new xterm.Terminal({
+    windowsMode: false,
+} as xterm.ITerminalOptions);
 
-term.setOption('fontFamily', 'courier-new, courier, monospace');
-term.setOption('fontSize', '15');
-term.setOption('rendererType', 'canvas');
+function connectToTerminalWebSocket() {
+    let socket = new WebSocket(`ws://127.0.0.1:3000/${pid}`);
+    socket.onopen = () => {
+        term.loadAddon(new AttachAddon(socket));
+        fitAddon.fit();
+
+        term.setOption('fontFamily', 'courier-new, courier, monospace');
+        term.setOption('fontSize', '15');
+        term.setOption('rendererType', 'canvas');
+    };
+}
 
 const fitAddon = new FitAddon();
 term.loadAddon(fitAddon);
@@ -48,11 +59,7 @@ window.addEventListener('message', event => {
     switch (message.command) {
         case 'newterm':
             pid = message.pid;
-            fitAddon.fit();
-            break;
-        case 'receivedata':
-            let data = message.data;
-            term.write(data);
+            connectToTerminalWebSocket();
             break;
         case 'redraw':
             term.refresh(0, term.rows - 1);
@@ -60,13 +67,13 @@ window.addEventListener('message', event => {
     }
 });
 
-term.onData(data => {
-    vscode.postMessage({
-        'command': 'termmessage',
-        'pid': pid,
-        'data': data,
-    });
-});
+// term.onData(data => {
+//     vscode.postMessage({
+//         'command': 'termmessage',
+//         'pid': pid,
+//         'data': data,
+//     });
+// });
 
 term.attachCustomKeyEventHandler((event) => {
     if (event.getModifierState('Control') && event.key == 'p') {
@@ -78,4 +85,14 @@ term.attachCustomKeyEventHandler((event) => {
 
 window.addEventListener('resize', () => {
     fitAddon.fit();
+
+});
+
+term.onResize((size: { cols: number, rows: number }) => {
+    vscode.postMessage({
+        'command': 'resize',
+        'pid': pid,
+        'rows': size.rows,
+        'cols': size.cols,
+    });
 });

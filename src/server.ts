@@ -8,13 +8,86 @@ import * as os from 'os';
 import * as pty from 'node-pty';
 import * as vscode from 'vscode';
 import { pid } from 'process';
+import * as express from 'express';
+import * as expressWs from 'express-ws';
 
 // Whether to use binary transport.
 const USE_BINARY = os.platform() !== "win32";
 
+let app: expressWs.Application | null;
+
 export function webviewServer(webviewPanel: vscode.Webview, context: vscode.ExtensionContext) {
   var terminals: any = {},
     logs: any = {};
+
+  if (app == null) {
+    app = expressWs(express()).app;
+
+    var port = 3000,
+      host = os.platform() === 'win32' ? '127.0.0.1' : '0.0.0.0';
+
+    app.ws('/:pid', (ws, req) => {
+      var term = terminals[parseInt(req.params.pid)];
+      console.log('Connected to terminal ' + term.pid);
+      ws.send(logs[term.pid]);
+
+      // string message buffering
+      function buffer(socket: any, timeout: number) {
+        let s = '';
+        let sender: NodeJS.Timeout | null = null;
+        return (data: string) => {
+          s += data;
+          if (!sender) {
+            sender = setTimeout(() => {
+              socket.send(s);
+              s = '';
+              sender = null;
+            }, timeout);
+          }
+        };
+      }
+      // binary message buffering
+      function bufferUtf8(socket: any, timeout: number) {
+        let buffer: Uint8Array[] = [];
+        let sender: NodeJS.Timeout | null = null;
+        let length = 0;
+        return (data: Uint8Array) => {
+          buffer.push(data);
+          length += data.length;
+          if (!sender) {
+            sender = setTimeout(() => {
+              socket.send(Buffer.concat(buffer, length));
+              buffer = [];
+              sender = null;
+              length = 0;
+            }, timeout);
+          }
+        };
+      }
+      const send = USE_BINARY ? bufferUtf8(ws, 5) : buffer(ws, 5);
+
+      term.on('data', function (data: any) {
+        try {
+          send(data);
+        } catch (ex) {
+          // The WebSocket is not open, ignore
+        }
+      });
+      ws.on('message', function (msg: any) {
+        term.write(msg);
+      });
+      ws.on('close', function () {
+        term.kill();
+        console.log('Closed terminal ' + term.pid);
+        // Clean things up
+        delete terminals[term.pid];
+        delete logs[term.pid];
+      });
+    });
+
+    console.log('App listening to http://127.0.0.1:' + port);
+    app.listen(port, host || '', () => { });
+  }
 
   function newTerm(message: any) {
     const env: any = Object.assign({}, process.env);
@@ -38,11 +111,6 @@ export function webviewServer(webviewPanel: vscode.Webview, context: vscode.Exte
     logs[term.pid] = '';
     term.on('data', function (data: any) {
       logs[data.pid] += data;
-      webviewPanel.postMessage({
-        'command': 'receivedata',
-        'pid': pid,
-        'data': data,
-      });
     });
     webviewPanel.postMessage({
       'command': 'newterm',

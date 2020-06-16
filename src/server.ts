@@ -10,26 +10,31 @@ import * as vscode from 'vscode';
 import { pid } from 'process';
 import * as express from 'express';
 import * as expressWs from 'express-ws';
+import { Server } from 'http';
+import { AddressInfo } from 'net';
 
 // Whether to use binary transport.
 const USE_BINARY = os.platform() !== "win32";
 
-let app: expressWs.Application | null;
-let terminals: any = {},
+export class TerminalServer {
+  terminals: any = {};
   logs: any = {};
+  app!: expressWs.Application;
+  server!: Server;
 
-export function webviewServer(webviewPanel: vscode.Webview, context: vscode.ExtensionContext) {
+  constructor() {
+    this.startServer();
+  }
 
-  if (app == null) {
-    app = expressWs(express()).app;
+  startServer() {
+    this.app = expressWs(express()).app;
 
-    var port = 3000,
-      host = os.platform() === 'win32' ? '127.0.0.1' : '0.0.0.0';
+    const host = os.platform() === 'win32' ? '127.0.0.1' : '0.0.0.0';
 
-    app.ws('/:pid', (ws, req) => {
-      var term = terminals[parseInt(req.params.pid)];
+    this.app.ws('/:pid', (ws, req) => {
+      var term = this.terminals[parseInt(req.params.pid)];
       console.log('Connected to terminal ' + term.pid);
-      ws.send(logs[term.pid]);
+      ws.send(this.logs[term.pid]);
 
       // string message buffering
       function buffer(socket: any, timeout: number) {
@@ -76,20 +81,22 @@ export function webviewServer(webviewPanel: vscode.Webview, context: vscode.Exte
       ws.on('message', function (msg: any) {
         term.write(msg);
       });
-      ws.on('close', function () {
+      ws.on('close', () => {
         term.kill();
         console.log('Closed terminal ' + term.pid);
         // Clean things up
-        delete terminals[term.pid];
-        delete logs[term.pid];
+        delete this.terminals[term.pid];
+        delete this.logs[term.pid];
       });
     });
 
-    console.log('App listening to http://127.0.0.1:' + port);
-    app.listen(port, host || '', () => { });
+    this.server = this.app.listen(0, host || '', () => {
+      let address = this.server.address() as AddressInfo;
+      console.log('App listening to ' + address.address + ':' + address.port);
+    });
   }
 
-  function newTerm(message: any) {
+  newTerm(webview: vscode.Webview, message: any) {
     const env: any = Object.assign({}, process.env);
     let config = vscode.workspace.getConfiguration('terminalEditors');
     let defaultShell = process.platform === 'win32' ? 'cmd.exe' : 'bash';
@@ -107,21 +114,23 @@ export function webviewServer(webviewPanel: vscode.Webview, context: vscode.Exte
       });
 
     console.log('Created terminal with PID: ' + term.pid);
-    terminals[term.pid] = term;
-    logs[term.pid] = '';
+    this.terminals[term.pid] = term;
+    this.logs[term.pid] = '';
     let pid = term.pid;
-    term.on('data', function (data: any) {
-      logs[pid] += data;
+    term.on('data', (data: any) => {
+      this.logs[pid] += data;
     });
-    webviewPanel.postMessage({
+    let address = this.server.address() as AddressInfo;
+    webview.postMessage({
       'command': 'newterm',
-      'pid': term.pid.toString()
+      'pid': term.pid.toString(),
+      'websocket': 'ws://' + address.address + ':' + address.port,
     });
-  };
+  }
 
-  function handleTermMessage(message: any) {
+  handleTermMessage(webview: vscode.Webview, message: any) {
     let pid = message.pid;
-    var term = terminals[parseInt(pid)];
+    var term = this.terminals[parseInt(pid)];
     if (term) {
       term.write(message.data);
     } else {
@@ -129,31 +138,33 @@ export function webviewServer(webviewPanel: vscode.Webview, context: vscode.Exte
     }
   }
 
-  function resize(message: any) {
+  resize(message: any) {
     let pid = message.pid;
     let rows = message.rows;
     let cols = message.cols;
-    let term = terminals[pid];
+    let term = this.terminals[pid];
     term.resize(cols, rows);
   }
 
-  webviewPanel.onDidReceiveMessage(
-    message => {
-      switch (message.command) {
-        case 'newterm':
-          newTerm(message);
-          return;
-        case 'termmessage':
-          handleTermMessage(message);
-          return;
-        case 'resize':
-          resize(message);
-          return;
-      }
-    },
-    undefined,
-    context.subscriptions
-  );
+  connectWebView(webview: vscode.Webview, context: vscode.ExtensionContext) {
+    webview.onDidReceiveMessage(
+      message => {
+        switch (message.command) {
+          case 'newterm':
+            this.newTerm(webview, message);
+            return;
+          case 'termmessage':
+            this.handleTermMessage(webview, message);
+            return;
+          case 'resize':
+            this.resize(message);
+            return;
+        }
+      },
+      undefined,
+      context.subscriptions
+    );
+  }
 }
 
 // module.exports = startServer;

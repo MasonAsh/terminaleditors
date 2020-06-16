@@ -31,7 +31,8 @@ window.addEventListener('message', event => {
     switch (message.command) {
         case 'newterm':
             pid = message.pid;
-            connectToTerminalWebSocket();
+            const socketURL = message.websocket;
+            connectToTerminalWebSocket(socketURL);
             // In case there were any resizes that haven't been synchronized with pty server
             fitAddon.fit();
             break;
@@ -72,8 +73,9 @@ window.addEventListener('resize', () => {
     fitAddon.fit();
 });
 
-function connectToTerminalWebSocket() {
-    let socket = new WebSocket(`ws://127.0.0.1:3000/${pid}`);
+function connectToTerminalWebSocket(socketURL: string) {
+    console.log(socketURL);
+    let socket = new WebSocket(`${socketURL}/${pid}`);
     socket.onopen = () => {
         term.loadAddon(new AttachAddon(socket));
 

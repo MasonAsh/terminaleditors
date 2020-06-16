@@ -9,6 +9,8 @@ let activePanel: vscode.WebviewPanel | null = null;
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	let serv = new server.TerminalServer();
+
 	function sendThemeToWebView(webview: vscode.Webview) {
 		let config = vscode.workspace.getConfiguration('terminalEditors');
 		function getColor(name: string) {
@@ -61,7 +63,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 			sendThemeToWebView(panel.webview);
 
-			server.webviewServer(panel.webview, context);
+			serv.connectWebView(panel.webview, context);
+
 			activePanel = panel;
 			panel.onDidChangeViewState((e: vscode.WebviewPanelOnDidChangeViewStateEvent) => {
 				if (e.webviewPanel.active) {
@@ -74,13 +77,9 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 
 			const cssPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'xterm.css'));
-			//const jsPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'xterm.js'));
 			const clientPath = vscode.Uri.file(path.join(context.extensionPath, 'out', 'client.js'));
-			const localUri = vscode.Uri.parse('http://localhost:3000');
-			//const jsUri = panel.webview.asWebviewUri(jsPath);
 			const cssUri = panel.webview.asWebviewUri(cssPath);
 			const clientUri = panel.webview.asWebviewUri(clientPath);
-			const serverUri = panel.webview.asWebviewUri(localUri);
 
 			panel.webview.html = getWebviewContent(panel.webview, cssUri, clientUri);
 		})

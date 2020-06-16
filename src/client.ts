@@ -31,7 +31,6 @@ window.addEventListener('message', event => {
     switch (message.command) {
         case 'newterm':
             pid = message.pid;
-            // Set timeout prevents race condition 
             connectToTerminalWebSocket();
             // In case there were any resizes that haven't been synchronized with pty server
             fitAddon.fit();
@@ -50,6 +49,13 @@ window.addEventListener('message', event => {
             });
         case 'redraw':
             term.refresh(0, term.rows - 1);
+            break;
+        case 'focus':
+            // Focus the terminal when the window is clicked into.
+            // The ms delay here is to prevent some weird race condition that 
+            // may steal the focus when the tab bar is clicked at the top.
+            // There is probably a better way to handle this.
+            setTimeout(() => term.focus(), 60);
             break;
     }
 });

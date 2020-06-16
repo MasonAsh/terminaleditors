@@ -66,6 +66,10 @@ export function activate(context: vscode.ExtensionContext) {
 			panel.onDidChangeViewState((e: vscode.WebviewPanelOnDidChangeViewStateEvent) => {
 				if (e.webviewPanel.active) {
 					activePanel = e.webviewPanel;
+					// Tell the terminal to focus itself when we tab in.
+					activePanel.webview.postMessage({
+						command: 'focus',
+					});
 				}
 			});
 

@@ -61,6 +61,10 @@ window.addEventListener('message', event => {
     }
 });
 
+window.addEventListener('focus', () => {
+    term.focus();
+})
+
 term.attachCustomKeyEventHandler((event) => {
     if (event.getModifierState('Control') && event.key == 'p') {
         return false;

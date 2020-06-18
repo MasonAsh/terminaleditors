@@ -92,7 +92,7 @@ export class TerminalServer {
 
     this.server = this.app.listen(0, host || '', () => {
       let address = this.server.address() as AddressInfo;
-      console.log('App listening to ' + address.address + ':' + address.port);
+      console.log('Started terminal websocket server on ' + 'ws://' + address.address + ':' + address.port);
     });
   }
 

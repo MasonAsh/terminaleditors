@@ -58,6 +58,9 @@ window.addEventListener('message', event => {
             // There is probably a better way to handle this.
             setTimeout(() => term.focus(), 60);
             break;
+        case 'exit':
+            term.write('\n\nDisconnected from terminal');
+            break;
     }
 });
 

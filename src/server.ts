@@ -117,8 +117,13 @@ export class TerminalServer {
     this.terminals[term.pid] = term;
     this.logs[term.pid] = '';
     let pid = term.pid;
-    term.on('data', (data: any) => {
+    term.onData((data: any) => {
       this.logs[pid] += data;
+    });
+    term.onExit(() => {
+      webview.postMessage({
+        command: 'exit'
+      });
     });
     let address = this.server.address() as AddressInfo;
     webview.postMessage({

@@ -14,7 +14,8 @@ import { Server } from 'http';
 import { AddressInfo } from 'net';
 
 // Whether to use binary transport.
-const USE_BINARY = os.platform() !== "win32";
+//const USE_BINARY = os.platform() !== "win32";
+const USE_BINARY = false;
 
 export class TerminalServer {
   terminals: any = {};

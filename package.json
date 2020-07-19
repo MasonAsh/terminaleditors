@@ -1,6 +1,7 @@
 {
 	"name": "terminaleditors",
 	"displayName": "terminaleditors",
+	"publisher": "MasonAsh",
 	"description": "",
 	"version": "0.0.1",
 	"engines": {
@@ -61,7 +62,8 @@
 		"lint": "eslint src --ext ts",
 		"watch": "./node_modules/.bin/webpack --watch --mode development --info-verbosity verbose",
 		"pretest": "yarn run compile && yarn run lint",
-		"test": "node ./out/test/runTest.js"
+		"test": "node ./out/test/runTest.js",
+		"lodash": ">=4.17.19"
 	},
 	"devDependencies": {
 		"@types/eslint": "^7.2.0",
@@ -94,6 +96,7 @@
 		"global": "^4.4.0",
 		"node-pty": "0.9.0-beta25",
 		"tsc": "^1.20150623.0",
+		"vsce": "^1.77.0",
 		"xterm-addon-attach": "^0.6.0",
 		"xterm-addon-webgl": "^0.8.0"
 	}

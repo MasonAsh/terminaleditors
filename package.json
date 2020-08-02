@@ -88,7 +88,8 @@
 		"webpack-cli": "^3.3.11",
 		"xterm": "^4.6.0",
 		"xterm-addon-fit": "^0.4.0",
-		"xterm-addon-unicode11": "^0.2.0"
+		"xterm-addon-unicode11": "^0.2.0",
+		"elliptic": ">=6.5.3"
 	},
 	"dependencies": {
 		"express": "^4.17.1",
